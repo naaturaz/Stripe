@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html ng-app="stripe">
+	<head>
+		<title>Stripe</title>
+		<meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="0">
+		<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width height=device-height">
+
+		<link rel="stylesheet" type="text/css" href="stripe.demo.css">
+
+
+	</head>
+	<body class="" style="background-color: gray; color:azure">
+		<!-- ROOT ENTRY POINT FOR UI-ROUTER -->
+		<div ui-view class="stripe"></div>
+
+
+
+		<button id="pay1">Pay 1</button>
+
+
+
+
+
+
+
+
+		<form action="http://localhost:3000/" method="post" id="payment-form">
+		  <div class="form-row">
+			<label for="card-element">
+			  Credit or debit card
+			</label>
+			<div id="card-element">
+			  <!-- A Stripe Element will be inserted here. -->
+			</div>
+		
+			<!-- Used to display form errors. -->
+			<div id="card-errors" role="alert"></div>
+		  </div>
+		
+		  <button>Submit Payment</button>
+		</form>
+
+
+
+		<!-- STRIPE JS -->
+		<script type="text/javascript" src="bootloader.js"></script>
+		<script src="https://js.stripe.com/v3/"></script>
+		<script type="text/javascript" src="stripe.demo.js"></script>
+
+
+
+	</body>
+</html>
