@@ -9,22 +9,12 @@
 
 		<link rel="stylesheet" type="text/css" href="stripe.demo.css">
 
-
 	</head>
 	<body class="" style="background-color: gray; color:azure">
 		<!-- ROOT ENTRY POINT FOR UI-ROUTER -->
 		<div ui-view class="stripe"></div>
 
-
-
 		<button id="pay1">Pay 1</button>
-
-
-
-
-
-
-
 
 		<form action="http://localhost:3000/" method="post" id="payment-form">
 		  <div class="form-row">
@@ -43,13 +33,34 @@
 		</form>
 
 
+		<form action="http://localhost:3000/" method="post" id="company-form">
+			<label for="element">
+			  Add Co Name and address, email
+			</label>
+			<div>
+				
+				<p>Name</p>
+				<input id='name' name="nameInput">
+				
+				<p>Address</p>
+				<input id='address' name="addressInput">
+				
+				<p>Email</p>
+				<input id='email' name="emailInput">
+
+			</div>
+		
+			<!-- Used to display form errors. -->
+			<div id="errors" role="alert"></div>
+		  </div>
+		
+		  <button>Submit Company</button>
+		</form>
 
 		<!-- STRIPE JS -->
 		<script type="text/javascript" src="bootloader.js"></script>
 		<script src="https://js.stripe.com/v3/"></script>
 		<script type="text/javascript" src="stripe.demo.js"></script>
-
-
 
 	</body>
 </html>
