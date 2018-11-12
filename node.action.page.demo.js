@@ -1,6 +1,9 @@
 const http = require('http');
-var qs = require('querystring');
+const qs = require('querystring');
 const uuidv4 = require('uuid/v4');
+const nodemailer = require('nodemailer');
+const MongoClient = require('mongodb').MongoClient;
+const passwordHash = require('password-hash');
 
 const server = http.createServer((req, res) => {
     if (req.method === 'POST') {
@@ -8,9 +11,9 @@ const server = http.createServer((req, res) => {
 
         // Set your secret key: remember to change this to your live secret key in production
         // See your keys here: https://dashboard.stripe.com/account/apikeys
-        var stripe = require("stripe")("sk_test_4eC39HqLyjWDarjtT1zdp7dc");
+        let stripe = require("stripe")("sk_test_4eC39HqLyjWDarjtT1zdp7dc");
 
-        var body = '';
+        let body = '';
 
         req.on('data', function (data) {
             body += data;
@@ -22,17 +25,36 @@ const server = http.createServer((req, res) => {
         });
 
         req.on('end', function () {
-            var post = qs.parse(body);
+            let post = qs.parse(body);
             // use post['blah'], etc.
             console.log(post.stripeToken);
 
             //adding to DB
             if(post.nameInput)
             {
-                var id = uuidv4(); // ⇨ '10ba038e-48da-487b-96e8-8d3b99b6d18a'
+                let id = uuidv4(); // ⇨ '10ba038e-48da-487b-96e8-8d3b99b6d18a'
 
-                dbCreateRecord({"id": id, "name": post.nameInput, "address": post.addressInput, "email": post.emailInput});
-                sendConfirmEmail(id);
+                _dbCreateRecord({
+                    "id": id, 
+                    "name": post.nameInput, 
+                    "address": post.addressInput, 
+                    "email": post.emailInput,
+                    "password": passwordHash.generate(post.passwordInput),
+                });
+
+                _sendConfirmEmail(id);
+                return;
+            }
+
+            //login
+            if(post.passwordInputLogin)
+            {
+                let hashedPassword = 'sha1$3I7HRwy7$cbfdac6008f9cab4083784cbd1874f76618d2a97';
+                
+                console.log(post.passwordInputLogin);
+                console.log(passwordHash.verify('password123', hashedPassword)); // true
+                console.log(passwordHash.verify('Password0', hashedPassword)); // false
+
                 return;
             }
 
@@ -71,17 +93,14 @@ const server = http.createServer((req, res) => {
     }
 });
 
-
 //db
-var MongoClient = require('mongodb').MongoClient;
-var url = "mongodb://localhost:27017/";
-
-let dbCreateRecord = function(obj)
+let url = "mongodb://localhost:27017/";
+let _dbCreateRecord = function(obj)
 {
     MongoClient.connect(url, function(err, db) {
         if (err) throw err;
-        var dbo = db.db("mydb");
-        // var myobj = { name: "Company Inc CC", address: "Highway 37 CC" };
+        let dbo = db.db("mydb");
+        // let myobj = { name: "Company Inc CC", address: "Highway 37 CC" };
 
 
         dbo.collection("customers").insertOne(obj, function(err, res) {
@@ -92,12 +111,10 @@ let dbCreateRecord = function(obj)
     });
 };
 
-
 //email
-var nodemailer = require('nodemailer');
-let sendConfirmEmail = function(id)
+let _sendConfirmEmail = function(id)
 {
-    var transporter = nodemailer.createTransport({
+    let transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: 'manuel.lopez@industrycorp.ca',
@@ -105,7 +122,7 @@ let sendConfirmEmail = function(id)
       }
     });
     
-    var mailOptions = {
+    let mailOptions = {
       from: 'manuel.lopez@industrycorp.ca',
       to: 'naaturaz@gmail.com',
       subject: 'Sending Email using Node.js',

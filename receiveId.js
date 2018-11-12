@@ -1,18 +1,21 @@
-var http = require('http');
-var url = require('url');
-var fs = require('fs');
+const http = require('http');
+const url = require('url');
+const MongoClient = require('mongodb').MongoClient;
+const mongoUrl = "mongodb://localhost:27017/";
+const fs = require('fs');
+const jQuery = require("jquery");
 
 http.createServer(function (req, res) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.write(req.url);
-    res.write("<br>");
+    // res.writeHead(200, {'Content-Type': 'text/html'});
+    // res.write(req.url);
+    // res.write("<br>");
 
     //parsing url
-    var q = url.parse(req.url, true).query;
-    var txt = "Id: " + q.id;
-    res.write(txt);
+    let q = url.parse(req.url, true).query;
+    let txt = "Id: " + q.id;
+    // res.write(txt);
 
-    res.write("<br>");
+    // res.write("<br>");
 
     if(!q.id)
     {
@@ -20,48 +23,69 @@ http.createServer(function (req, res) {
         return;
     }
 
-    findCustomer(q.id, function(cust)
-    {
+    _handleFindCustomer(q.id, res);
+  
+}).listen(8080);
 
+console.log("listen(8080) ex url: http://localhost:8080/?id=2017aad-asd-87pp-arr");
+
+let _handleFindCustomer = function(idParam, res)
+{
+    _findCustomer(idParam, function(cust)
+    {
         if(cust)
         {
             if(!cust.emailConfirmed)
             {
-                confirmCustEmail(q.id, function(id){
+                _confirmCustEmail(idParam, function(id){
                     if(id)
                     {
-                        res.end('Email Confirmed! :' + id);
+                        // res.end('Email Confirmed! :' + id);
+                        _returnLoginPage(id, res);
                     }
-                    else
-                    {
-                        res.end('Something happened');
-
-                    }
+                    else res.end('Something happened');
                 });
             }
-            else
-            {
-                res.end('This Email is used already');
-            }
+            else res.end('This Email is already confirmed');
         }
-
     });
-}).listen(8080);
+};
 
-console.log(":listen(8080)");
-// http://localhost:8080/?id=2017asad-asd-87pp
-
-
-var MongoClient = require('mongodb').MongoClient;
-var findCustomer = function(id, callback)
+let _returnLoginPage = function(id, res)
 {
 
-    var url = "mongodb://localhost:27017/";
-    MongoClient.connect(url, function(err, db) {
-      if (err) throw err;
-      var dbo = db.db("mydb");
 
-      var query = { "id": id };
+    res.end("login page");
+
+    // res.writeHead(301,
+    //     {Location: 'file:///C:/Users/USER/Desktop/Stripe/login.html'}
+    //   );
+    // res.end();
+
+
+
+    // jQuery(res).find("#hiddenId").val(id);
+
+    // fs.appendFile('login.html', '<div id="visibleId">ID: '+id+'</div>', function (err) {
+    //     if (err) throw err;
+    //     console.log('Updated!');
+    // });
+
+    // fs.readFile('login.html', function(err, data) {
+    //     res.writeHead(200, {'Content-Type': 'text/html'});
+
+    //     res.write(data);
+    //     res.end();
+    // });
+};
+
+let _findCustomer = function(id, callback)
+{
+    MongoClient.connect(mongoUrl, function(err, db) {
+      if (err) throw err;
+      let dbo = db.db("mydb");
+
+      let query = { "id": id };
       dbo.collection("customers").find(query).toArray(function(err, result) {
         if (err) throw err;
         console.log(result);
@@ -75,15 +99,13 @@ var findCustomer = function(id, callback)
     });
 };
 
-var confirmCustEmail = function(id, callback)
+let _confirmCustEmail = function(id, callback)
 {
-    var url = "mongodb://127.0.0.1:27017/";
-
-    MongoClient.connect(url, function(err, db) {
+    MongoClient.connect(mongoUrl, function(err, db) {
     if (err) throw err;
-    var dbo = db.db("mydb");
-    var myquery = { "id": id };
-    var newvalues = { $set: {emailConfirmed: true } };
+    let dbo = db.db("mydb");
+    let myquery = { "id": id };
+    let newvalues = { $set: {emailConfirmed: true } };
     dbo.collection("customers").updateOne(myquery, newvalues, function(err, res) {
             if (err) throw err;
             console.log(id, "email confirmed");
