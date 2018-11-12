@@ -54,8 +54,8 @@ let _handleFindCustomer = function(idParam, res)
 let _returnLoginPage = function(id, res)
 {
 
-
-    res.end("login page");
+    return res.redirect('/Login');
+    // res.end("login page");
 
     // res.writeHead(301,
     //     {Location: 'file:///C:/Users/USER/Desktop/Stripe/login.html'}
